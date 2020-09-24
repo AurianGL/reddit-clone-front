@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useForgotPasswordMutation } from '../generated/graphql';
 
 const ForgotPassword: React.FC<{}> = ({}) => {
-	const [complet, setComplete] = useState(false)
+	const [complete, setComplete] = useState(false)
 	const [, forgotPassword] = useForgotPasswordMutation()
 	return (
 		<Wrapper variant='small'>
@@ -19,7 +19,7 @@ const ForgotPassword: React.FC<{}> = ({}) => {
 					forgotPassword(values)
 					setComplete(true)
 				}}>
-				{({ isSubmitting }) => complet ? <Box>if this email is associated with an account, we've sent you a email</Box> : (
+				{({ isSubmitting }) => complete ? <Box>if this email is associated with an account, we've sent you a email</Box> : (
 					<Form>
 						<InputField
 							name='email'
