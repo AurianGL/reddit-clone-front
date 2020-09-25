@@ -6,7 +6,7 @@ import {
 	LoginMutation,
 	RegisterMutation,
 } from '../generated/graphql';
-import { cacheExchange } from '@urql/exchange-graphcache';
+import { cacheExchange, Resolver } from '@urql/exchange-graphcache';
 import { betterUpdateQuery } from './betterUpdateQuery';
 import Router from 'next/router';
 
@@ -16,13 +16,30 @@ const errorExchange: Exchange = ({ forward }) => ops$ => {
 	return pipe(
 		forward(ops$),
 		tap(({ error }) => {
-			
 			if (error?.message.includes('not authenticated')) {
-				console.log('error? :',error.message.includes('not authenticated'));
+				console.log('error? :', error.message.includes('not authenticated'));
 				Router.replace('/login');
 			}
 		})
 	);
+};
+
+export const cursorPagination = (): Resolver => {
+	return (_parent, fieldArgs, cache, info) => {
+		const { parentKey: entityKey, fieldName } = info;
+		const allFields = cache.inspectFields(entityKey)
+		const fieldInfos = allFields.filter((inf) => inf.fieldName === fieldName)
+		const size = fieldInfos.length
+		if (size === 0) {
+			return undefined
+		}
+		const results: string[] = []
+		fieldInfos.forEach((fieldInfo) => {			
+			const data = cache.resolveFieldByKey(entityKey, fieldInfo.fieldKey) as string[]
+			results.push(...data)
+		});
+		return results
+	};
 };
 
 export const createUrqlClient = (ssrExchange: any) => ({
@@ -33,6 +50,11 @@ export const createUrqlClient = (ssrExchange: any) => ({
 	exchanges: [
 		dedupExchange,
 		cacheExchange({
+			resolvers: {
+				Query: {
+					posts: cursorPagination(),
+				}
+			},
 			updates: {
 				Mutation: {
 					logout: (_result, args, cache, info) => {

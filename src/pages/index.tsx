@@ -1,13 +1,17 @@
 import { withUrqlClient } from 'next-urql';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { usePostsQuery } from '../generated/graphql';
-import React from 'react';
+import React, { useState } from 'react';
 import { Layout } from '../components/Layout';
 import { Heading, Link, Stack, Text, Box, Flex, Button } from '@chakra-ui/core';
 import NextLink from 'next/link';
 
 const Index = () => {
-	const [{ data, fetching }] = usePostsQuery({ variables: { limit: 10, cursor: '' } });
+	const [variables, setVariables] = useState({
+		limit: 10,
+		cursor: "" as string,
+	});
+	const [{ data, fetching }] = usePostsQuery({variables,});
 	return (
 		<Layout>
 			<Flex>
@@ -29,11 +33,23 @@ const Index = () => {
 					))}
 				</Stack>
 			)}
-			{data && <Flex >
-				<Button isLoading={fetching} m='auto' my={4} variantColor='teal'>
-					load more
-				</Button>
-			</Flex>}
+			{data && (
+				<Flex>
+					<Button
+						onClick={() => {
+							setVariables({
+								limit: variables.limit,
+								cursor: data.posts[data.posts.length - 1].createdAt,
+							});
+						}}
+						isLoading={fetching}
+						m='auto'
+						my={4}
+						variantColor='teal'>
+						load more
+					</Button>
+				</Flex>
+			)}
 		</Layout>
 	);
 };
