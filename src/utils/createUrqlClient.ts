@@ -8,20 +8,18 @@ import {
 } from '../generated/graphql';
 import { cacheExchange } from '@urql/exchange-graphcache';
 import { betterUpdateQuery } from './betterUpdateQuery';
-import Router from 'next/router'
+import Router from 'next/router';
 
-import { pipe, tap } from "wonka";
-
+import { pipe, tap } from 'wonka';
 
 const errorExchange: Exchange = ({ forward }) => ops$ => {
 	return pipe(
 		forward(ops$),
 		tap(({ error }) => {
-			console.log(error)
-			if (error) {
-				if (error?.message.includes('not authenticated')) {
-					Router.replace('/login	');
-				}
+			
+			if (error?.message.includes('not authenticated')) {
+				console.log('error? :',error.message.includes('not authenticated'));
+				Router.replace('/login');
 			}
 		})
 	);
